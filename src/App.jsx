@@ -231,25 +231,10 @@ export default function App() {
                 carregarDados();
                 setTelaAtiva('emprestimos'); 
                 mostrarSucesso('Empréstimo registrado com sucesso!');
-              }} 
+              }}
+              onCancelar={() => setTelaAtiva('emprestimos')}
               setErro={mostrarErro} 
             />
-            <button 
-              onClick={() => setTelaAtiva('emprestimos')}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #cbd5e0',
-                backgroundColor: '#fff',
-                color: '#4a5568',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                marginTop: '12px' 
-              }}
-            >
-              Voltar para Empréstimos
-            </button>
           </div>
         )}
 
