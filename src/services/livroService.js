@@ -1,8 +1,9 @@
 const BASE_URL = 'http://localhost:3000/livros';
 
 export const livroService = {
-  async listarTodos() {
-    const res = await fetch(BASE_URL);
+  async listarTodos(genero = '') {
+    const url = genero ? `${BASE_URL}?genero=${encodeURIComponent(genero)}` : BASE_URL;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Erro ao buscar livros');
     return res.json();
   },

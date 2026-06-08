@@ -3,9 +3,9 @@ import { livroService } from './services/livroService';
 import { emprestimoService } from './services/emprestimoService';
 
 import LivroForm from './components/LivroForm';
-import LivroList from './components/LivroList';
+import LivroCards from './components/LivroCards';
 import EmprestimoForm from './components/EmprestimoForm';
-import EmprestimoList from './components/EmprestimoList';
+import EmprestimoCards from './components/EmprestimoCards'; 
 import HistoricoList from './components/HistoricoList';
 import Toast from './components/Toast';
 
@@ -13,9 +13,10 @@ export default function App() {
   const [livros, setLivros] = useState([]);
   const [emprestimos, setEmprestimos] = useState([]);
   const [livroParaEdicao, setLivroParaEdicao] = useState(null);
-  const [erro, setErro] = useState('');
+  const [generoFiltro, setGeneroFiltro] = useState('');
   const [carregando, setCarregando] = useState(false);
-  const [telaAtiva, setTelaAtiva] = useState('operacoes');
+  
+  const [telaAtiva, setTelaAtiva] = useState('livros'); 
   const [notificacao, setNotificacao] = useState({ mensagem: '', tipo: 'erro' });
 
   const mostrarErro = (msg) => setNotificacao({ mensagem: msg, tipo: 'erro' });
@@ -26,13 +27,13 @@ export default function App() {
     setCarregando(true);
     try {
       const [dadosLivros, dadosEmprestimos] = await Promise.all([
-        livroService.listarTodos(),
+        livroService.listarTodos(generoFiltro),
         emprestimoService.listarTodos()
       ]);
       setLivros(dadosLivros);
-      setEmprestimos(dadosEmprestimos);
+      setEmprestimos(dadosEmprestimos || []);
     } catch (err) {
-      mostrarErro('Falha ao conectar com o servidor. Verifique se o backend está rodando.');
+      mostrarErro('Falha ao conectar com o servidor.');
     } finally {
       setCarregando(false);
     }
@@ -40,114 +41,226 @@ export default function App() {
 
   useEffect(() => {
     carregarDados();
-  }, []);
+  }, [generoFiltro]);
 
   const dispararEdicao = (livro) => {
     setLivroParaEdicao(livro);
-    setTelaAtiva('operacoes');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTelaAtiva('cadastrar-livro'); 
   };
 
+  // 🎨 Definição de Cores para o efeito "Fusão"
+  const corHeaderEscuro = '#1a202c'; // A cor escura elegante que você tinha antes
+  const corConteudoBranco = '#ffffff'; // Cor interna do container principal
+
   return (
-    <div style={{ fontFamily: 'sans-serif', maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
-      <h1>📚 Sistema de Controle de Biblioteca</h1>
-
-      {erro && (
-        <div style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-          ❌ Erro do Sistema: {erro}
+    /* 🏗️ CONTAINER PRINCIPAL VERTICAL */
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100vh', 
+      backgroundColor: '#f8fafc', // Fundo clarinho das laterais da página
+      fontFamily: 'sans-serif'
+    }}>
+      
+      {/* 📋 MENU SUPERIOR (Sua faixa escura restaurada) */}
+      <header style={{
+        backgroundColor: corHeaderEscuro,
+        color: '#fff',
+        padding: '20px 40px 0 40px', /* Sem padding inferior para colar as abas na borda */
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center', /* 🎯 Centraliza o conteúdo no meio */
+        gap: '20px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100
+      }}>
+        
+        {/* Lado Esquerdo/Centro: Logotipo centralizado */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '26px' }}>📚</span>
+          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+            BiblioTech
+          </h2>
         </div>
-      )}
 
-      {carregando && (
-        <div style={{ fontSize: '18px', color: '#0056b3', marginBottom: '15px' }}>
-          🔄 Carregando dados da API...
-        </div>
-      )}
+        {/* Lado Direito/Baixo: Alinha as abas no limite inferior do header escorrendo para o conteúdo */}
+        <nav style={{ 
+          display: 'flex', 
+          gap: '6px', 
+          alignItems: 'flex-end',
+          width: '100%',
+          maxWidth: '1200px' /* Mantém alinhado com o seu grid de conteúdo */
+        }}>
+          
+          {/* Aba: Livros */}
+          <button 
+            onClick={() => setTelaAtiva('livros')}
+            style={{
+              // Se ativa, vira BRANCA (cor do conteúdo). Se inativa, fica num cinza escuro sutil
+              background: telaAtiva === 'livros' || telaAtiva === 'cadastrar-livro' ? corConteudoBranco : '#2d3748',
+              color: telaAtiva === 'livros' || telaAtiva === 'cadastrar-livro' ? '#1a202c' : '#a0aec0',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px 8px 0 0', 
+              cursor: 'pointer',
+              fontWeight: '700',
+              fontSize: '14px',
+              transition: 'background-color 0.2s',
+              // 🚀 O TRUQUE: Joga a aba ativa 1px para baixo cobrindo a linha de corte
+              transform: telaAtiva === 'livros' || telaAtiva === 'cadastrar-livro' ? 'translateY(1px)' : 'none',
+              zIndex: telaAtiva === 'livros' || telaAtiva === 'cadastrar-livro' ? 2 : 1
+            }}
+          >
+            📖 Livros
+          </button>
 
-      {/* Menu de Navegação por Abas */}
-      <nav style={{ marginBottom: '30px', display: 'flex', gap: '10px' }}>
-        <button 
-          onClick={() => setTelaAtiva('operacoes')}
-          style={{
-            padding: '10px 20px',
-            fontWeight: 'bold',
-            backgroundColor: telaAtiva === 'operacoes' ? '#007bff' : '#eee',
-            color: telaAtiva === 'operacoes' ? '#fff' : '#000',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          ⚙️ Operações e Cadastros
-        </button>
-        <button 
-          onClick={() => setTelaAtiva('historico')}
-          style={{
-            padding: '10px 20px',
-            fontWeight: 'bold',
-            backgroundColor: telaAtiva === 'historico' ? '#007bff' : '#eee',
-            color: telaAtiva === 'historico' ? '#fff' : '#000',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          📋 Histórico Geral
-        </button>
-      </nav>
+          {/* Aba: Empréstimos */}
+          <button 
+            onClick={() => setTelaAtiva('emprestimos')}
+            style={{
+              background: telaAtiva === 'emprestimos' || telaAtiva === 'cadastrar-emprestimo' ? corConteudoBranco : '#2d3748',
+              color: telaAtiva === 'emprestimos' || telaAtiva === 'cadastrar-emprestimo' ? '#1a202c' : '#a0aec0',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px 8px 0 0',
+              cursor: 'pointer',
+              fontWeight: '700',
+              fontSize: '14px',
+              transition: 'background-color 0.2s',
+              transform: telaAtiva === 'emprestimos' || telaAtiva === 'cadastrar-emprestimo' ? 'translateY(1px)' : 'none',
+              zIndex: telaAtiva === 'emprestimos' || telaAtiva === 'cadastrar-emprestimo' ? 2 : 1
+            }}
+          >
+            🤝 Empréstimos
+          </button>
 
-      {/* RENDERIZAÇÃO CONDICIONAL DAS TELAS */}
-      {telaAtiva === 'operacoes' ? (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          {/* Aba: Histórico */}
+          <button 
+            onClick={() => setTelaAtiva('historico')}
+            style={{
+              background: telaAtiva === 'historico' ? corConteudoBranco : '#2d3748',
+              color: telaAtiva === 'historico' ? '#1a202c' : '#a0aec0',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px 8px 0 0',
+              cursor: 'pointer',
+              fontWeight: '700',
+              fontSize: '14px',
+              transition: 'background-color 0.2s',
+              transform: telaAtiva === 'historico' ? 'translateY(1px)' : 'none',
+              zIndex: telaAtiva === 'historico' ? 2 : 1
+            }}
+          >
+            📋 Histórico
+          </button>
+        </nav>
+      </header>
+
+      {/* 💻 CONTEÚDO PRINCIPAL (Agora colado perfeitamente nas abas superiores) */}
+      <main style={{ 
+        flexGrow: 1, 
+        padding: '40px', 
+        boxSizing: 'border-box',
+        width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        backgroundColor: corConteudoBranco,
+        borderRadius: '0 0 12px 12px', /* Arredonda só embaixo */
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+        border: '1px solid #e2e8f0',
+        borderTop: 'none', /* Remove a borda de cima para a etiqueta "vazar" livremente */
+        zIndex: 1
+      }}>
+        
+        {carregando && (
+          <div style={{ color: '#007bff', fontWeight: 'bold', marginBottom: '20px' }}>🔄 Sincronizando dados...</div>
+        )}
+
+        {/* ROTA: LISTA DE LIVROS EM CARDS */}
+        {telaAtiva === 'livros' && (
+          <LivroCards 
+            livros={livros}
+            emprestimos={emprestimos}
+            onEditar={dispararEdicao} 
+            onCliqueCadastrar={() => setTelaAtiva('cadastrar-livro')} 
+            onSucesso={() => { carregarDados(); mostrarSucesso('Livro removido.'); }}
+            setErro={mostrarErro}
+            generoFiltro={generoFiltro}
+            setGeneroFiltro={setGeneroFiltro}
+          />
+        )}
+
+        {/* ROTA: FORMULÁRIO DE LIVRO (CADASTRO / EDIÇÃO) */}
+        {telaAtiva === 'cadastrar-livro' && (
+          <div>
             <LivroForm 
               livroParaEdicao={livroParaEdicao} 
               onSucesso={() => { 
                 setLivroParaEdicao(null); 
                 carregarDados(); 
-                mostrarSucesso('Operação no acervo realizada com sucesso!');
+                setTelaAtiva('livros'); 
+                mostrarSucesso('Livro guardado no acervo com sucesso!');
               }} 
+              onCancelar={() => {
+                setLivroParaEdicao(null); 
+                setTelaAtiva('livros'); 
+              }}
               setErro={mostrarErro} 
             />
+          </div>
+        )}
+
+        {/* ROTA: GERENCIAR EMPRÉSTIMOS EM CARDS */}
+        {telaAtiva === 'emprestimos' && (
+          <EmprestimoCards 
+            emprestimos={emprestimos} 
+            livros={livros}
+            onSucesso={() => { carregarDados(); mostrarSucesso('Operação concluída!'); }}
+            setErro={mostrarErro}
+            onCliqueNovoEmprestimo={() => setTelaAtiva('cadastrar-emprestimo')} 
+          />
+        )}
+
+        {/* ROTA: FORMULÁRIO DE NOVO EMPRÉSTIMO */}
+        {telaAtiva === 'cadastrar-emprestimo' && (
+          <div>
             <EmprestimoForm 
               livros={livros} 
               onSucesso={() => {
                 carregarDados();
+                setTelaAtiva('emprestimos'); 
                 mostrarSucesso('Empréstimo registrado com sucesso!');
               }} 
               setErro={mostrarErro} 
             />
+            <button 
+              onClick={() => setTelaAtiva('emprestimos')}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e0',
+                backgroundColor: '#fff',
+                color: '#4a5568',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                marginTop: '12px' 
+              }}
+            >
+              Voltar para Empréstimos
+            </button>
           </div>
+        )}
 
-          <hr style={{ margin: '30px 0' }} />
+        {/* ROTA: HISTÓRICO GERAL */}
+        {telaAtiva === 'historico' && (
+          <HistoricoList emprestimos={emprestimos} livros={livros} /> 
+        )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            <LivroList 
-              livros={livros} 
-              onEditar={dispararEdicao} 
-              onSucesso={() => {
-                carregarDados();
-                mostrarSucesso('Livro removido do acervo.');
-              }} 
-              setErro={mostrarErro} 
-            />
-            <EmprestimoList 
-              emprestimos={emprestimos} 
-              livros={livros}
-              onSucesso={carregarDados} 
-              setErro={setErro} 
-            />
-          </div>
-        </>
-      ) : (
-        <HistoricoList typeof emprestimos={emprestimos} emprestimos={emprestimos} livros={livros} />
-      )}
+      </main>
 
-      <Toast 
-        mensagem={notificacao.mensagem} 
-        tipo={notificacao.tipo} 
-        onFechar={fecharNotificacao} 
-      />
+      <Toast mensagem={notificacao.mensagem} tipo={notificacao.tipo} onFechar={fecharNotificacao} />
     </div>
   );
 }
