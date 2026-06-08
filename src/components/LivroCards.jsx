@@ -317,18 +317,18 @@ export default function LivroCards({ livros, onEditar, onCliqueCadastrar, onSuce
 
                     if (!emp.devolvido) {
                       if (foiAtrasado) {
-                        fraseRelatorio = `🔴 O(A) estudante ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e ainda não entregou. O prazo expirou em ${emp.dataDevolucao} e está atrasado.`;
+                        fraseRelatorio = `🔴 ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e ainda não entregou. O prazo expirou em ${emp.dataDevolucao} e está atrasado.`;
                         corDestaqueStatus = '#ef4444';
                       } else {
-                        fraseRelatorio = `🟡 O(A) estudante ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e ainda não entregou, tendo até o dia ${emp.dataDevolucao} para realizar a entrega.`;
+                        fraseRelatorio = `🟡 ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e ainda não entregou, tendo até o dia ${emp.dataDevolucao} para realizar a entrega.`;
                         corDestaqueStatus = '#b45309';
                       }
                     } else {
                       if (foiAtrasado) {
-                        fraseRelatorio = `🟢 O(A) estudante ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e entregou na data ${emp.dataEntregaEfetiva} com atraso (o prazo limite era ${emp.dataDevolucao}).`;
+                        fraseRelatorio = `🔴 ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e entregou na data ${emp.dataEntregaEfetiva} com atraso (o prazo limite era ${emp.dataDevolucao}).`;
                         corDestaqueStatus = '#718096';
                       } else {
-                        fraseRelatorio = `🟢 O(A) estudante ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e entregou na data ${emp.dataEntregaEfetiva} dentro do prazo.`;
+                        fraseRelatorio = `🟢  ${emp.nomeAluno} pegou o livro na data ${emp.dataEmprestimo} e entregou na data ${emp.dataEntregaEfetiva} dentro do prazo.`;
                         corDestaqueStatus = '#16a34a';
                       }
                     }
